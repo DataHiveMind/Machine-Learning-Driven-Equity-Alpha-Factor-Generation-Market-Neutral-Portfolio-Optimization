@@ -1,0 +1,18 @@
+standardization: {method: "zscore", by: ["date"]}
+winsorization: {lower: 0.01, upper: 0.99, by: ["date"]}
+neutralization:
+  controls: ["beta_mkt", "sector_onehot"]
+  method: "cross_sectional_ols"
+factors:
+  - name: "momentum_12_1"
+    func: "features.technical.momentum"
+    params: {lookback: 252, skip: 21}
+  - name: "volatility_21d"
+    func: "features.technical.volatility"
+    params: {window: 21}
+  - name: "value_ep"
+    func: "features.fundamental.earnings_yield"
+    params: {}
+labels:
+  horizon_days: 21
+  type: "forward_return"

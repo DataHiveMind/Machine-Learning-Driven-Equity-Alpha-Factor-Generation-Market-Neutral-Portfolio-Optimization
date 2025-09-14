@@ -1,0 +1,15 @@
+target: "label_21d_ret"
+cv:
+  scheme: "purged_kfold"
+  n_splits: 5
+  embargo_days: 5
+model:
+  name: "lightgbm"
+  params:
+    objective: "regression"
+    num_leaves: 63
+    learning_rate: 0.05
+    n_estimators: 1000
+    subsample: 0.8
+    colsample_bytree: 0.8
+metrics: ["ic", "rank_ic", "mse"]

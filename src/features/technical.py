@@ -5,65 +5,76 @@ Purpose: Technical analysis feature engineering utilities for the project.
 """
 import pandas as pd
 import numpy as np
-import ta
+
 
 def add_returns_column(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add daily returns to the DataFrame.
-
-    Parameters:
-    df (pd.DataFrame): Input DataFrame with a 'Close' column.
-
-    Returns:
-    pd.DataFrame: DataFrame with an additional 'Returns' column.
     """
     df['Returns'] = df['Close'].pct_change()
     return df
 
-def add_moving_averages(df:pd.DataFrame , windows : list = [5, 10, 20])-> pd.DataFrame:
+def add_moving_averages(df: pd.DataFrame, windows: list = [5, 10, 20]) -> pd.DataFrame:
     """
-    Add simple and exponetail moving averages to the DataFrame.
-
-    Parameters:
-    df (pd.DataFrame): Input DataFrame with a 'Close' column.
-    windows (list): List of window sizes for moving averages.
-
-    Returns:
-    pd.DataFrame: DataFrame with additional moving average columns.
+    Add simple and exponential moving averages to the DataFrame.
     """
     for window in windows:
         df[f'SMA_{window}'] = df['Close'].rolling(window=window).mean()
         df[f'EMA_{window}'] = df['Close'].ewm(span=window, adjust=False).mean()
     return df
 
+def add_rsi(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+    """
+    Add Relative Strength Index (RSI) to the DataFrame.
+    """
+    delta = df['Close'].diff()
+    gain = np.where(delta > 0, delta, 0)
+    loss = np.where(delta < 0, -delta, 0)
+    avg_gain = pd.Series(gain).rolling(window=window).mean()
+    avg_loss = pd.Series(loss).rolling(window=window).mean()
+    rs = avg_gain / avg_loss
+    df['RSI'] = 100 - (100 / (1 + rs))
+    return df
+
+def add_macd(df: pd.DataFrame, fast: int = 12, slow: int = 26, signal: int = 9) -> pd.DataFrame:
+    """
+    Add MACD and MACD Signal to the DataFrame.
+    """
+    ema_fast = df['Close'].ewm(span=fast, adjust=False).mean()
+    ema_slow = df['Close'].ewm(span=slow, adjust=False).mean()
+    df['MACD'] = ema_fast - ema_slow
+    df['MACD_Signal'] = df['MACD'].ewm(span=signal, adjust=False).mean()
+    return df
+
+def add_bollinger_bands(df: pd.DataFrame, window: int = 20, num_std: int = 2) -> pd.DataFrame:
+    """
+    Add Bollinger Bands to the DataFrame.
+    """
+    rolling_mean = df['Close'].rolling(window=window).mean()
+    rolling_std = df['Close'].rolling(window=window).std()
+    df['Bollinger_High'] = rolling_mean + (rolling_std * num_std)
+    df['Bollinger_Low'] = rolling_mean - (rolling_std * num_std)
+    return df
+
+def add_atr(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+    """
+    Add Average True Range (ATR) to the DataFrame.
+    """
+    high_low = df['High'] - df['Low']
+    high_close = np.abs(df['High'] - df['Close'].shift())
+    low_close = np.abs(df['Low'] - df['Close'].shift())
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    df['ATR'] = tr.rolling(window=window).mean()
+    return df
+
 def add_momentum_indicators(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Add momentum indicators to the DataFrame.
-
-    Parameters:
-    df (pd.DataFrame): Input DataFrame with a 'Close' column.
-
-    Returns:
-    pd.DataFrame: DataFrame with additional momentum indicator columns.
-    """
-    df['RSI'] = ta.momentum.rsi(df['Close'], window=14)
-    df['MACD'] = ta.trend.macd(df['Close'])
-    df['MACD_Signal'] = ta.trend.macd_signal(df['Close'])
+    df = add_rsi(df)
+    df = add_macd(df)
     return df
 
 def add_volatility_indicators(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Add volatility indicators to the DataFrame.
-
-    Parameters:
-    df (pd.DataFrame): Input DataFrame with 'High', 'Low', and 'Close' columns.
-
-    Returns:
-    pd.DataFrame: DataFrame with additional volatility indicator columns.
-    """
-    df['Bollinger_High'] = ta.volatility.bollinger_hband(df['Close'], window=20, window_dev=2)
-    df['Bollinger_Low'] = ta.volatility.bollinger_lband(df['Close'], window=20, window_dev=2)
-    df['ATR'] = ta.volatility.average_true_range(df['High'], df['Low'], df['Close'], window=14)
+    df = add_bollinger_bands(df)
+    df = add_atr(df)
     return df
 
 if __name__ == "__main__":

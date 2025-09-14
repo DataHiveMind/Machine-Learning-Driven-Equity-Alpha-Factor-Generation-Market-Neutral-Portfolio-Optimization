@@ -24,7 +24,13 @@ class Winsorizer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        return mstats.winsorize(X, limits=self.limits)
+        # Ensure X is a DataFrame for compatibility
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        X_winsorized = X.copy()
+        for col in X.columns:
+            X_winsorized[col] = mstats.winsorize(X[col], limits=self.limits)
+        return X_winsorized
     
 class Neutralizer(BaseEstimator, TransformerMixin):
     """Custom transformer for neutralization."""
@@ -35,7 +41,9 @@ class Neutralizer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        # Assuming X is a DataFrame and self.factors is a list of column names to neutralize against
+        # Ensure X is a DataFrame for compatibility
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         X_neutralized = X.copy()
         for factor in self.factors:
             if factor in X.columns:

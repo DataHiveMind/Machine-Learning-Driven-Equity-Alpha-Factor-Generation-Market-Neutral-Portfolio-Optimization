@@ -1,0 +1,14 @@
+rebalance: {frequency: "M", hold_days: 21, turnover_limit: 0.6}
+objective: "maximize_ic_to_risk"
+constraints:
+  market_beta: 0.0
+  net_exposure: 0.0
+  gross_exposure: 1.0
+  per_name_max: 0.02
+  sector_exposure: {max_abs: 0.10}
+risk_model:
+  covariance: "ledoit_wolf"
+  shrinkage: 0.1
+costs:
+  bps_per_trade: 5
+  slippage_bps: 2

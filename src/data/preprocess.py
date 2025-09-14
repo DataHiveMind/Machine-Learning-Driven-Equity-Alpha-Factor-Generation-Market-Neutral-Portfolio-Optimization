@@ -28,6 +28,13 @@ def preprocess_data(df: pd.DataFrame) -> pd.DataFrame:
     # Remove outliers using Z-score method
     df = df[(np.abs(stats.zscore(df[numerical_cols])) < 3).all(axis=1)]
 
+    # Save processed data to data/processed folder
+    import os
+    processed_dir = os.path.join("data", "processed")
+    os.makedirs(processed_dir, exist_ok=True)
+    processed_path = os.path.join(processed_dir, "processed_data.csv")
+    df.to_csv(processed_path, index=False)
+
     return df
 
 
