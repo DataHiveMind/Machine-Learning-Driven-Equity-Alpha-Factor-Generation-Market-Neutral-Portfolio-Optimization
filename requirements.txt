@@ -1,0 +1,28 @@
+# Core Data Science Libraries
+numpy 
+pandas
+matplotlib
+seaborn
+
+# Machine Learning Libraries
+scikit-learn
+tensorflow
+keras
+xgboost
+lightgbm
+torch
+
+# Data Visualization
+plotly
+
+# Reinforcement Learning
+stable-baselines3
+gym
+
+# Mathematical Libraries
+scipy
+statsmodels
+
+
+# Core data loader
+openBB[all]
